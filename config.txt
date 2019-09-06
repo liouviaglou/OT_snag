@@ -1,0 +1,16 @@
+[args]
+restName = Cotogna
+date = 2019-09-23
+time = 17:00
+windowSizeMin = 45 
+partySize = 2
+
+[signup]
+firstName = Luba
+lastName = Glouk
+phoneNumber = 6508611055
+email = lubagloukhov@gmail.com
+
+[signin]
+email = lubagloukhov@gmail.com
+password = 123890
