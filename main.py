@@ -7,6 +7,8 @@ import sys
 import os
 import configparser
 from datetime import *
+import urllib.parse as urlparse
+from urllib.parse import urlencode
 
 from selenium import webdriver  
 
@@ -17,6 +19,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 
 from webdriver_manager.chrome import ChromeDriverManager
+
+import collections
 
 # python3 main.py config.txt
 
@@ -51,7 +55,9 @@ def snag_rez(availTimes):
 	print (aTime)
 	wait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//span[text()='{}']".format(aTime)))).click()
 	sign_up()
-	cancel()
+	paramS_list = ['rid', 'confnumber', 'token']
+	urlparam_dict = capture_urlparam(paramS_list)
+	cancel(urlparam_dict)
 
 def sign_up():
 	driver.find_element_by_id("firstName").send_keys(config['signup']['firstName'])
@@ -66,11 +72,33 @@ def sign_in():
 	driver.find_element_by_css_selector('#Email').send_keys(config['signin']['email'])
 	driver.find_element_by_css_selector('#Password').send_keys(config['signin']['password'])
 	driver.find_element_by_css_selector('#signInButton').click()
+
+def capture_urlparam(paramS_list):
+	wait(driver, 5).until(
+		lambda driver: all(x in driver.current_url for x in paramS_list))
+	urlString = driver.current_url
+	urlParams = urlparse.urlparse(urlString).query
+	urlPrDict = {k: urlparse.parse_qs(urlParams)[k] for k in paramS_list}
+	print (urlPrDict)
+	return urlPrDict
+
+	
 	
 
-def cancel():
-	driver.find_element_by_id("cancel-btn").click()
+def cancel(urlparam_dict):
+	# https://www.opentable.com/book/view?rid=52636&d=2019-09-23%2016%3A30&sd=2019-09-23%2016%3A30&p=2&pt=100&pofids=&hash=3073588394&st=Standard&avt=eyJ2IjoxLCJtIjowLCJwIjowLCJjIjo2fQ&corrid=79915f8a-6613-445c-96a8-0f035958a088&dateTime=&iid=1&rai=false&reso=1&resoC=0&rgt=0&anon=0&conv=0&ui=new&user=0&confnumber=2064023270&token=01ubQJSIyuqpZu2CzE9f--cVSq_buzB9Jii251X-JkXok1
+	# https://www.opentable.com/book/cancel?rid=52636&confnumber=2064023270&token=01ubQJSIyuqpZu2CzE9f--cVSq_buzB9Jii251X-JkXok1
+
+	# https://www.opentable.com/book/cancel?rid=%5B%2752636%27%5D&confnumber=%5B%27281444232%27%5D&token=%5B%2701hqs7v_NJcMTfSpIOcEU78puA3vEZVW3_fAwv9-ssN1k1%27%5D
+
+
+
+	url = 'https://www.opentable.com/book/cancel?'+urlencode(urlparam_dict, True)
+	print (url)
+	driver.get(url)
 	driver.find_element_by_css_selector('#btn-cancel').click()
+
+
 
 
 def convert_time(Time):
